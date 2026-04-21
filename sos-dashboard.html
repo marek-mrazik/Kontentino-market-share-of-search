@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Kontentino – Share of Search</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0F172A; font-family: Georgia, 'Times New Roman', serif; }
+  .scroll { overflow-y: auto; }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: #0F172A; }
+  ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+  .country-card:hover { border-color: #7C3AED !important; background: #1A2540 !important; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState } = React;
+
+const BRAND_COLORS = {
+  Kontentino: "#7C3AED",
+  Metricool: "#F59E0B",
+  ZoomSphere: "#06B6D4",
+  planable: "#EC4899",
+  Publer: "#10B981",
+  Agorapulse: "#EF4444",
+  Loomly: "#8B5CF6",
+  "Social Pilot": "#3B82F6",
+  "Vista social": "#F97316",
+  SocialBee: "#84CC16",
+};
+
+const COUNTRIES = {
+  Slovakia: {
+    flag: "🇸🇰", total: 60930,
+    data: [
+      { brand: "ZoomSphere", volume: 24850, share: 40.8 },
+      { brand: "Kontentino", volume: 19060, share: 31.3 },
+      { brand: "Metricool", volume: 10340, share: 17.0 },
+      { brand: "Publer", volume: 2320, share: 3.8 },
+      { brand: "planable", volume: 1290, share: 2.1 },
+      { brand: "Social Pilot", volume: 1160, share: 1.9 },
+      { brand: "Agorapulse", volume: 850, share: 1.4 },
+      { brand: "Loomly", volume: 670, share: 1.1 },
+      { brand: "Vista social", volume: 390, share: 0.6 },
+    ],
+  },
+  "Czech Republic": {
+    flag: "🇨🇿", total: 98880,
+    data: [
+      { brand: "ZoomSphere", volume: 52200, share: 52.8 },
+      { brand: "Kontentino", volume: 15400, share: 15.6 },
+      { brand: "Metricool", volume: 14580, share: 14.7 },
+      { brand: "Agorapulse", volume: 4200, share: 4.2 },
+      { brand: "Publer", volume: 4190, share: 4.2 },
+      { brand: "planable", volume: 3130, share: 3.2 },
+      { brand: "Social Pilot", volume: 2780, share: 2.8 },
+      { brand: "Loomly", volume: 1720, share: 1.7 },
+      { brand: "Vista social", volume: 680, share: 0.7 },
+    ],
+  },
+  Belgium: {
+    flag: "🇧🇪", total: 141650,
+    data: [
+      { brand: "Metricool", volume: 55010, share: 38.8 },
+      { brand: "Kontentino", volume: 23460, share: 16.6 },
+      { brand: "Agorapulse", volume: 14400, share: 10.2 },
+      { brand: "planable", volume: 12860, share: 9.1 },
+      { brand: "Loomly", volume: 12490, share: 8.8 },
+      { brand: "Publer", volume: 9580, share: 6.8 },
+      { brand: "Social Pilot", volume: 7570, share: 5.3 },
+      { brand: "Vista social", volume: 3220, share: 2.3 },
+      { brand: "ZoomSphere", volume: 3060, share: 2.2 },
+    ],
+  },
+  Poland: {
+    flag: "🇵🇱", total: 104470,
+    data: [
+      { brand: "Metricool", volume: 32380, share: 31.0 },
+      { brand: "Publer", volume: 26300, share: 25.2 },
+      { brand: "Kontentino", volume: 14010, share: 13.4 },
+      { brand: "Loomly", volume: 6450, share: 6.2 },
+      { brand: "Vista social", volume: 6150, share: 5.9 },
+      { brand: "Social Pilot", volume: 5820, share: 5.6 },
+      { brand: "Agorapulse", volume: 5330, share: 5.1 },
+      { brand: "planable", volume: 5310, share: 5.1 },
+      { brand: "ZoomSphere", volume: 2720, share: 2.6 },
+    ],
+  },
+  Netherlands: {
+    flag: "🇳🇱", total: 197080,
+    data: [
+      { brand: "Metricool", volume: 70480, share: 35.8 },
+      { brand: "planable", volume: 40170, share: 20.4 },
+      { brand: "Publer", volume: 21940, share: 11.1 },
+      { brand: "Social Pilot", volume: 19290, share: 9.8 },
+      { brand: "Loomly", volume: 18540, share: 9.4 },
+      { brand: "Kontentino", volume: 9720, share: 4.9 },
+      { brand: "Agorapulse", volume: 8880, share: 4.5 },
+      { brand: "Vista social", volume: 6740, share: 3.4 },
+      { brand: "ZoomSphere", volume: 1320, share: 0.7 },
+    ],
+  },
+  Global: {
+    flag: "🌍", total: 16720600,
+    data: [
+      { brand: "Metricool", volume: 8782000, share: 52.5 },
+      { brand: "Publer", volume: 2069700, share: 12.4 },
+      { brand: "SocialBee", volume: 1187000, share: 7.1 },
+      { brand: "Loomly", volume: 1173900, share: 7.0 },
+      { brand: "Social Pilot", volume: 1038900, share: 6.2 },
+      { brand: "Agorapulse", volume: 1004100, share: 6.0 },
+      { brand: "planable", volume: 794600, share: 4.8 },
+      { brand: "Vista social", volume: 401000, share: 2.4 },
+      { brand: "Kontentino", volume: 150300, share: 0.9 },
+      { brand: "ZoomSphere", volume: 119100, share: 0.7 },
+    ],
+  },
+};
+
+function getKontentinoStats(countryData) {
+  const idx = countryData.data.findIndex(d => d.brand === "Kontentino");
+  if (idx === -1) return { rank: "-", share: 0, volume: 0 };
+  return { rank: idx + 1, share: countryData.data[idx].share, volume: countryData.data[idx].volume };
+}
+
+function medalColor(rank) {
+  if (rank === 1) return { bg: "#FFD700", text: "#000" };
+  if (rank === 2) return { bg: "#C0C0C0", text: "#000" };
+  if (rank === 3) return { bg: "#CD7F32", text: "#fff" };
+  return { bg: "#1E293B", text: "#64748B" };
+}
+
+function App() {
+  const [selected, setSelected] = useState("Slovakia");
+  const current = COUNTRIES[selected];
+  const kStats = getKontentinoStats(current);
+  const maxShare = current.data[0].share;
+
+  return (
+    <div style={{ minHeight: "100vh", background: "#0F172A", color: "#F1F5F9", padding: "28px 20px" }}>
+      {/* Header */}
+      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 6 }}>
+        <div style={{ background: "#7C3AED", color: "#fff", fontFamily: "monospace", fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 4, letterSpacing: "0.12em" }}>
+          KONTENTINO
+        </div>
+        <h1 style={{ fontSize: 18, fontWeight: 700, letterSpacing: "-0.02em", color: "#F8FAFC" }}>
+          Share of Search — Market Intelligence
+        </h1>
+      </div>
+      <p style={{ fontSize: 12, color: "#475569", fontFamily: "monospace", marginBottom: 28 }}>
+        Apr 2023 – Apr 2026 · 6 markets · Source: Selfstorming
+      </p>
+
+      <div style={{ display: "grid", gridTemplateColumns: "300px 1fr", gap: 20, alignItems: "start" }}>
+
+        {/* LEFT PANEL */}
+        <div>
+          <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.14em", color: "#475569", fontFamily: "monospace", textTransform: "uppercase", marginBottom: 10 }}>
+            Kontentino by Market
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            {Object.keys(COUNTRIES).map(country => {
+              const stats = getKontentinoStats(COUNTRIES[country]);
+              const isActive = selected === country;
+              const medal = medalColor(stats.rank);
+              return (
+                <div
+                  key={country}
+                  className="country-card"
+                  onClick={() => setSelected(country)}
+                  style={{
+                    background: isActive ? "#1E293B" : "#0F172A",
+                    border: isActive ? "1px solid #7C3AED" : "1px solid #1E293B",
+                    borderRadius: 10,
+                    padding: "12px 14px",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 10,
+                    transition: "all 0.15s",
+                  }}
+                >
+                  <span style={{ fontSize: 20 }}>{COUNTRIES[country].flag}</span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontWeight: 700, fontSize: 13, color: isActive ? "#E2E8F0" : "#94A3B8", marginBottom: 5 }}>
+                      {country}
+                    </div>
+                    <div style={{ background: "#0F172A", borderRadius: 3, height: 4, width: "100%", marginBottom: 4 }}>
+                      <div style={{
+                        background: isActive ? "#7C3AED" : "#2D3748",
+                        height: 4, borderRadius: 3,
+                        width: `${Math.min(stats.share * 2.5, 100)}%`,
+                        transition: "width 0.3s",
+                      }} />
+                    </div>
+                    <span style={{ fontSize: 11, color: isActive ? "#A78BFA" : "#475569", fontFamily: "monospace", fontWeight: 700 }}>
+                      {stats.share}% · {stats.volume.toLocaleString()} searches
+                    </span>
+                  </div>
+                  <span style={{
+                    background: medal.bg, color: medal.text,
+                    borderRadius: 6, fontWeight: 900, fontSize: 12,
+                    padding: "2px 7px", fontFamily: "monospace",
+                    flexShrink: 0,
+                  }}>
+                    #{stats.rank}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* RIGHT PANEL */}
+        <div>
+          {/* Country hero */}
+          <div style={{
+            background: "#1E293B",
+            border: "1px solid #334155",
+            borderRadius: 14,
+            padding: "20px 24px",
+            marginBottom: 16,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+            gap: 16,
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+              <span style={{ fontSize: 44, lineHeight: 1 }}>{current.flag}</span>
+              <div>
+                <div style={{ fontSize: 26, fontWeight: 800, letterSpacing: "-0.03em", color: "#F8FAFC" }}>{selected}</div>
+                <div style={{ fontSize: 12, color: "#64748B", fontFamily: "monospace", marginTop: 2 }}>
+                  {current.total.toLocaleString()} total searches · {current.data.length} brands
+                </div>
+              </div>
+            </div>
+            <div style={{ textAlign: "right" }}>
+              <div style={{ fontSize: 10, fontFamily: "monospace", color: "#64748B", marginBottom: 6, letterSpacing: "0.1em", textTransform: "uppercase" }}>
+                Kontentino
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, justifyContent: "flex-end" }}>
+                <span style={{ fontSize: 30, fontWeight: 900, color: "#A78BFA", fontFamily: "monospace", letterSpacing: "-0.04em" }}>
+                  {kStats.share}%
+                </span>
+                <span style={{
+                  background: medalColor(kStats.rank).bg,
+                  color: medalColor(kStats.rank).text,
+                  fontWeight: 900, fontSize: 18,
+                  padding: "3px 12px", borderRadius: 8, fontFamily: "monospace",
+                }}>
+                  #{kStats.rank}
+                </span>
+              </div>
+              <div style={{ fontSize: 12, color: "#475569", fontFamily: "monospace", marginTop: 3 }}>
+                {kStats.volume.toLocaleString()} searches
+              </div>
+            </div>
+          </div>
+
+          {/* Leaderboard */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+            {current.data.map((item, idx) => {
+              const isK = item.brand === "Kontentino";
+              const color = BRAND_COLORS[item.brand] || "#64748B";
+              const medal = medalColor(idx + 1);
+              return (
+                <div key={item.brand} style={{
+                  background: isK ? "#1A0F2E" : "#0F172A",
+                  border: isK ? "1px solid #7C3AED" : "1px solid #1E293B",
+                  borderRadius: 10,
+                  padding: "10px 14px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
+                }}>
+                  <div style={{
+                    width: 26, height: 26, borderRadius: "50%",
+                    background: medal.bg, color: medal.text,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontWeight: 900, fontSize: 11, flexShrink: 0, fontFamily: "monospace",
+                  }}>
+                    {idx + 1}
+                  </div>
+
+                  <div style={{ display: "flex", alignItems: "center", gap: 7, width: 130, flexShrink: 0 }}>
+                    <div style={{
+                      width: 9, height: 9, borderRadius: "50%", background: color, flexShrink: 0,
+                      boxShadow: isK ? `0 0 8px ${color}` : "none",
+                    }} />
+                    <span style={{ fontSize: 13, fontWeight: isK ? 800 : 600, color: isK ? "#A78BFA" : "#94A3B8" }}>
+                      {item.brand}
+                    </span>
+                    {isK && (
+                      <span style={{ fontSize: 9, background: "#7C3AED", color: "#fff", padding: "1px 5px", borderRadius: 3, fontFamily: "monospace" }}>
+                        us
+                      </span>
+                    )}
+                  </div>
+
+                  <div style={{ flex: 1, background: "#1E293B", borderRadius: 5, height: 7 }}>
+                    <div style={{
+                      background: isK ? "#7C3AED" : color,
+                      height: 7, borderRadius: 5,
+                      width: `${(item.share / maxShare) * 100}%`,
+                      opacity: isK ? 1 : 0.55,
+                      boxShadow: isK ? "0 0 10px #7C3AED88" : "none",
+                      transition: "width 0.4s ease",
+                    }} />
+                  </div>
+
+                  <div style={{ fontFamily: "monospace", fontSize: 13, fontWeight: 700, color: isK ? "#A78BFA" : "#64748B", width: 46, textAlign: "right" }}>
+                    {item.share}%
+                  </div>
+                  <div style={{ fontFamily: "monospace", fontSize: 11, color: "#334155", width: 88, textAlign: "right" }}>
+                    {item.volume.toLocaleString()}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <div style={{ marginTop: 12, fontSize: 11, color: "#1E293B", fontFamily: "monospace", textAlign: "right" }}>
+            Source: Selfstorming · Apr 2023–Apr 2026
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>
